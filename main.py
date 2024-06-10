@@ -56,17 +56,18 @@ class App:
         Update the screen and the physics engine.
         :return: None
         """
-        left_click = 1
+        left_click_event = 1
+        left_mouse_press = 0
 
         while self.running:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     self.running = False
                 elif e.type == pygame.MOUSEBUTTONDOWN:
-                    if e.button == left_click:
+                    if e.button == left_click_event:
                         self.start_time = pygame.time.get_ticks()
                 elif e.type == pygame.MOUSEBUTTONUP:
-                    if e.button == left_click:
+                    if e.button == left_click_event:
                         self.fire()
                         self.missile = Missile(self.player.position)
                         self.space.add(self.missile, self.missile.shape)
@@ -83,6 +84,10 @@ class App:
             self.gui.clear()
 
             self.space.debug_draw(self.draw_options)
+
+            if pygame.mouse.get_pressed()[left_mouse_press]:
+                self.show_power_meter()
+
             pygame.display.flip()
 
             self.fps = 60
@@ -166,6 +171,25 @@ class App:
         charge = min(dt, max_charge)
         power = max(charge, min_charge)
         return power
+
+    def show_power_meter(self):
+        """
+        Display the power meter on the let side of the screen as the player
+        charges a shot.
+        :return: None
+        """
+        start_x = 30
+        start_y = 550
+        width = 10
+        height = self.charge_shot() // 2
+
+        pygame.draw.line(
+            self.gui.screen,
+            pygame.Color('red'),
+            (start_x, start_y),
+            (start_x, start_y - height),
+            width
+        )
 
 
 def main():

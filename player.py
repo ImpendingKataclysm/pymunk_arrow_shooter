@@ -13,7 +13,7 @@ class Player(pymunk.Body):
         self.color = (255, 50, 50, 255)
         self.start_x = 100
         self.start_y = 500
-        self.speed = 0.5
+        self.speed = 2.5
         self.friction = 0.5
         self.elasticity = 0.9
         self.shape = pymunk.Circle(self, self.radius)

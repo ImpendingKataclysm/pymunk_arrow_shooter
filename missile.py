@@ -23,18 +23,26 @@ class Missile(pymunk.Body):
         Move the missile across the screen while it is in flight.
         :return: None
         """
-        drag_constant = 0.0002
-        point_direction = Vec2d(1, 0).rotated(self.angle)
-        flight_direction = Vec2d(*self.velocity)
-        flight_direction, flight_speed = flight_direction.normalized_and_length()
-        dot = flight_direction.dot(point_direction)
-        drag_force = (1 - abs(dot)) * flight_speed ** 2 * drag_constant * self.mass
-        impulse = drag_force * flight_direction
-        tail_position = self.position + Vec2d(-50, 0).rotated(self.angle)
+        try:
+            drag_constant = 0.0002
+            point_direction = Vec2d(1, 0).rotated(self.angle)
+            flight_direction = Vec2d(*self.velocity)
 
-        self.apply_impulse_at_world_point(
-            impulse,
-            tail_position
-        )
+            if flight_direction.length < 1e-5:
+                flight_direction = Vec2d(0, 0)
+                flight_speed = 0
+            else:
+                flight_direction, flight_speed = flight_direction.normalized_and_length()
 
-        self.angular_velocity *= 0.5
+            dot = flight_direction.dot(point_direction)
+            drag_force = (1 - abs(dot)) * flight_speed ** 2 * drag_constant * self.mass
+            drag_force = min(drag_force, 1e3)
+            impulse = drag_force * flight_direction
+            tail_position = self.position + Vec2d(-50, 0).rotated(self.angle)
+
+            self.apply_impulse_at_world_point(impulse, tail_position)
+
+            self.angular_velocity *= 0.5
+        except Exception as e:
+            print(f'Error in update_movement: {e}')
+            print(f'Missile position: {self.position}')

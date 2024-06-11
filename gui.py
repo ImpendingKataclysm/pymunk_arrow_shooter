@@ -36,10 +36,33 @@ class Interface:
         self.render_text(text, text_start)
 
     def show_frame_rate(self):
+        """
+        Display the current frame rate at the top of the screen
+        :return: None
+        """
         frames_per_second = self.clock.get_fps()
         text = f'{frames_per_second} FPS'
         text_start = (0, 5)
         self.render_text(text, text_start)
+
+    def show_instructions(self):
+        """
+        Display the instructions at the bottom of the screen.
+        :return: None
+        """
+        text_start_x = 5
+        text_start_y = self.screen_height - 75
+        line_height = 25
+        instructions = [
+            'Aim with the mouse. Hold the left mouse button to charge the shot,'
+            ' then release it to fire',
+            'Use the arrow keys or WASD keys to move.',
+            'Press Esc or \'Q\' to quit.'
+        ]
+
+        for line in instructions:
+            self.render_text(line, (text_start_x, text_start_y))
+            text_start_y += line_height
 
     def render_text(self, text: str, text_start: tuple):
         """

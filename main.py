@@ -107,6 +107,7 @@ class App:
 
             self.gui.show_score(self.player_score)
             self.gui.show_frame_rate()
+            self.gui.show_instructions()
 
             pygame.display.flip()
 
@@ -259,6 +260,11 @@ class App:
         )
 
     def update_targets(self):
+        """
+        Periodically spawn a new falling target and remove targets that are no
+        longer in play.
+        :return: None
+        """
         self.ticks_to_next_target -= 1
 
         if self.ticks_to_next_target <= 0:

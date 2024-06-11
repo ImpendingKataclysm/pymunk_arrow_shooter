@@ -1,3 +1,5 @@
+import random
+
 import pygame
 import pymunk
 import pymunk.pygame_util
@@ -8,6 +10,7 @@ from typing import Optional, List
 from gui import Interface
 from player import Player
 from missile import Missile
+from target import Target
 
 
 class App:
@@ -30,6 +33,9 @@ class App:
         self.missile: Optional[Missile] = None
 
         self.flying_missiles: List[Missile] = []
+        self.targets: List[Target] = []
+
+        self.ticks_to_next_target = 5
 
     def setup(self):
         """
@@ -74,6 +80,7 @@ class App:
 
             self.handle_key_input()
             self.aim()
+            self.update_targets()
 
             for missile in self.flying_missiles:
                 missile.update_movement()
@@ -92,6 +99,7 @@ class App:
 
             self.fps = 60
             self.space.step(1.0 / self.fps)
+            self.gui.clock.tick(self.fps)
 
     def handle_key_input(self):
         """
@@ -190,6 +198,39 @@ class App:
             (start_x, start_y - height),
             width
         )
+
+    def update_targets(self):
+        self.ticks_to_next_target -= 1
+
+        if self.ticks_to_next_target <= 0:
+            self.ticks_to_next_target = 100
+            self.spawn_target()
+
+        targets_to_remove = [
+            target for target in self.targets if (
+                target.position.y >= self.gui.screen_height
+                or target not in self.space.bodies
+            )
+        ]
+
+        for target in targets_to_remove:
+            if target in self.space.bodies:
+                self.space.remove(target, target.shape)
+
+            if target in self.targets:
+                self.targets.remove(target)
+
+    def spawn_target(self):
+        """
+        Create a target at a random position at the top of the screen.
+        :return:
+        """
+        target = Target()
+        target_x = random.randint(100, self.gui.screen_width - 100)
+
+        target.position = target_x, 100
+        self.space.add(target, target.shape)
+        self.targets.append(target)
 
 
 def main():

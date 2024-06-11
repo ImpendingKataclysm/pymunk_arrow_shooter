@@ -100,11 +100,12 @@ class App:
                     self.flying_missiles.remove(missile)
 
             self.gui.clear()
-
             self.space.debug_draw(self.draw_options)
 
             if pygame.mouse.get_pressed()[left_mouse_press]:
                 self.show_power_meter()
+
+            self.gui.show_score(self.player_score)
 
             pygame.display.flip()
 

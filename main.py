@@ -36,6 +36,7 @@ class App:
         self.targets: List[Target] = []
 
         self.ticks_to_next_target = 5
+        self.player_score: int = 0
 
     def setup(self):
         """
@@ -45,6 +46,7 @@ class App:
         self.running = True
         self.fps = 0
         self.start_time = 0
+        self.player_score = 0
 
         self.space.gravity = (0, 100)
 
@@ -64,6 +66,15 @@ class App:
         """
         left_click_event = 1
         left_mouse_press = 0
+        collision_type_target = 0
+        collision_type_missile = 1
+
+        missile_hit_handler = self.space.add_collision_handler(
+            collision_type_target,
+            collision_type_missile
+        )
+
+        missile_hit_handler.post_solve = self.post_solve_missile_hit
 
         while self.running:
             for e in pygame.event.get():
@@ -100,6 +111,52 @@ class App:
             self.fps = 60
             self.space.step(1.0 / self.fps)
             self.gui.clock.tick(self.fps)
+            
+    def post_solve_missile_hit(self, arbiter, space, data):
+        """
+        Handles a collision between a missile and a target by calling a callback
+        function.
+        :param arbiter: Pymunk Arbiter that contains the colliding shapes
+        :param space: Pymunk Space in which the collision is taking place
+        :param data: Additional arguments required by the callback
+        :return: None
+        """
+        impulse_len = 300
+
+        if arbiter.total_impulse.length > impulse_len:
+            target, missile = arbiter.shapes
+            missile.collision_type = 0
+            missile.group = 1
+            target_body = target.body
+            missile_body = missile.body
+
+            self.space.add_post_step_callback(
+                self.hit_target,
+                missile_body,
+                target_body,
+                target
+            )
+
+    def hit_target(self, space, missile_body, target_body, target_shape):
+        """
+        Called when a missile hits a target. Increments the player's score by
+        the target's points value and removes the target and the missile.
+        :param space: The space in which the collision occurs.
+        :param missile_body: Missile hitting the Target
+        :param target_body: Target hit by the Missile
+        :param target_shape: Shape of the Target
+        :return: None
+        """
+        if target_body in self.targets:
+            self.player_score += target_body.score_points
+
+        if missile_body in self.flying_missiles:
+            self.flying_missiles.remove(missile_body)
+            self.space.remove(missile_body, missile_body.shape)
+
+        if target_shape in space.shapes and target_body in space.bodies:
+            self.space.remove(target_shape)
+            self.space.remove(target_body)
 
     def handle_key_input(self):
         """

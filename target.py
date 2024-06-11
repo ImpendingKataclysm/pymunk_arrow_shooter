@@ -21,3 +21,5 @@ class Target(pymunk.Body):
         self.shape.collision_type = 0
         self.shape.friction = 0.9
         self.shape.elasticity = 0.95
+
+        self.score_points = 5

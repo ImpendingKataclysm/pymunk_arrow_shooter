@@ -35,6 +35,12 @@ class Interface:
         text_start = (self.screen_width - 100, 20)
         self.render_text(text, text_start)
 
+    def show_frame_rate(self):
+        frames_per_second = self.clock.get_fps()
+        text = f'{frames_per_second} FPS'
+        text_start = (0, 5)
+        self.render_text(text, text_start)
+
     def render_text(self, text: str, text_start: tuple):
         """
         Render a string of text on the screen.

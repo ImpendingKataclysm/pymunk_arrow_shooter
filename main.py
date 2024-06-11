@@ -106,6 +106,7 @@ class App:
                 self.show_power_meter()
 
             self.gui.show_score(self.player_score)
+            self.gui.show_frame_rate()
 
             pygame.display.flip()
 

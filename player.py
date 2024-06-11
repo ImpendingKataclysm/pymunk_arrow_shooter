@@ -17,6 +17,7 @@ class Player(pymunk.Body):
         self.friction = 0.5
         self.elasticity = 0.9
         self.shape = pymunk.Circle(self, self.radius)
+        self.shape.collision_type = 2
 
     def place(self):
         """

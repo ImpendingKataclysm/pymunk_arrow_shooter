@@ -3,7 +3,8 @@ import pymunk
 
 class Target(pymunk.Body):
     """
-    Circular falling target.
+    Circular falling target that causes damage to the player when they collide.
+    The player can shoot it to win points.
     """
     def __init__(self):
         super(Target, self).__init__(mass=10)
@@ -23,3 +24,4 @@ class Target(pymunk.Body):
         self.shape.elasticity = 0.95
 
         self.score_points = 5
+        self.damage_points = 1

@@ -16,7 +16,11 @@ class Interface:
             (self.screen_width, self.screen_height)
         )
 
-        self.main_font = pygame.font.SysFont('Calibri', 18)
+        self.font_family = 'Calibri'
+        self.font_size_p = 18
+        self.font_size_h1 = 36
+
+        # self.main_font = pygame.font.SysFont('Calibri', 18)
 
     def clear(self):
         """
@@ -33,7 +37,7 @@ class Interface:
         """
         text = f'Score: {points}'
         text_start = (self.screen_width - 100, 20)
-        self.render_text(text, text_start)
+        self.render_text(text, text_start, self.font_size_p)
 
     def show_frame_rate(self):
         """
@@ -43,7 +47,7 @@ class Interface:
         frames_per_second = self.clock.get_fps()
         text = f'{frames_per_second} FPS'
         text_start = (0, 5)
-        self.render_text(text, text_start)
+        self.render_text(text, text_start, self.font_size_p)
 
     def show_instructions(self):
         """
@@ -61,15 +65,30 @@ class Interface:
         ]
 
         for line in instructions:
-            self.render_text(line, (text_start_x, text_start_y))
+            self.render_text(line, (text_start_x, text_start_y), self.font_size_p)
             text_start_y += line_height
 
-    def render_text(self, text: str, text_start: tuple):
+    def show_game_over_screen(self):
+        """
+        Clear the screen and display the game over text.
+        :return: None
+        """
+        self.clear()
+
+        text = 'Game over'
+        text_start_x = self.screen_width / 2 - self.font_size_h1 * 2
+        text_start_y = self.screen_height / 2
+
+        self.render_text(text, (text_start_x, text_start_y), self.font_size_h1)
+
+    def render_text(self, text: str, text_start: tuple, text_size: int):
         """
         Render a string of text on the screen.
+        :param text_size: Font size for the rendered text
         :param text: String of text to render
         :param text_start: Starting point of the text string on the screen
         :return: None
         """
-        text_surface = self.main_font.render(text, True, pygame.Color('white'))
+        font = pygame.font.SysFont(self.font_family, text_size)
+        text_surface = font.render(text, True, pygame.Color('white'))
         self.screen.blit(source=text_surface, dest=text_start)

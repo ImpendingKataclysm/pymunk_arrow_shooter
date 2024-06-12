@@ -21,6 +21,8 @@ class App:
         pygame.init()
 
         self.running: bool = False
+        self.playing: bool = False
+
         self.fps: float = 0
         self.start_time: float = 0
 
@@ -44,6 +46,8 @@ class App:
         :return: None
         """
         self.running = True
+        self.playing = True
+
         self.fps = 0
         self.start_time = 0
         self.player_score = 0
@@ -64,10 +68,10 @@ class App:
         Update the screen and the physics engine.
         :return: None
         """
-        left_click_event = 1
         left_mouse_press = 0
         collision_type_target = 0
         collision_type_missile = 1
+        collision_type_player = 2
 
         missile_hit_handler = self.space.add_collision_handler(
             collision_type_target,
@@ -76,20 +80,24 @@ class App:
 
         missile_hit_handler.post_solve = self.post_solve_missile_hit
 
-        while self.running:
-            for e in pygame.event.get():
-                if e.type == pygame.QUIT:
-                    self.running = False
-                elif e.type == pygame.MOUSEBUTTONDOWN:
-                    if e.button == left_click_event:
-                        self.start_time = pygame.time.get_ticks()
-                elif e.type == pygame.MOUSEBUTTONUP:
-                    if e.button == left_click_event:
-                        self.fire()
-                        self.missile = Missile(self.player.position)
-                        self.space.add(self.missile, self.missile.shape)
+        player_hit_handler = self.space.add_collision_handler(
+            collision_type_player,
+            collision_type_target
+        )
 
-            self.handle_key_input()
+        player_hit_handler.post_solve = self.post_solve_player_hit
+
+        while self.running:
+            events = pygame.event.get()
+            keys = pygame.key.get_pressed()
+
+            self.handle_quit_event(events, keys)
+
+            if not self.playing:
+                continue
+
+            self.handle_mouse_event(events)
+            self.handle_key_input(keys)
             self.aim()
             self.update_targets()
 
@@ -114,7 +122,40 @@ class App:
             self.fps = 60
             self.space.step(1.0 / self.fps)
             self.gui.clock.tick(self.fps)
-            
+
+    def handle_quit_event(self, events, keys):
+        """
+        Stop running the game if the player clicks the 'X' button or presses 'Q'
+        or 'Esc'.
+        :param events: Pygame events currently occurring.
+        :param keys: Keys currently pressed.
+        :return: None
+        """
+        for e in events:
+            if e.type == pygame.QUIT:
+                self.running = False
+
+        if keys[pygame.K_q] or keys[pygame.K_ESCAPE]:
+            self.running = False
+
+    def handle_mouse_event(self, events):
+        """
+        Handle events triggered by mouse inputs. Charge and fire the arrow when
+        the user presses and releases the left mouse button.
+        :param events: Pygame events currently occurring
+        :return: None
+        """
+        left_click_event = 1
+        for e in events:
+            if e.type == pygame.MOUSEBUTTONDOWN:
+                if e.button == left_click_event:
+                    self.start_time = pygame.time.get_ticks()
+            elif e.type == pygame.MOUSEBUTTONUP:
+                if e.button == left_click_event:
+                    self.fire()
+                    self.missile = Missile(self.player.position)
+                    self.space.add(self.missile, self.missile.shape)
+
     def post_solve_missile_hit(self, arbiter, space, data):
         """
         Handles a collision between a missile and a target by calling a callback
@@ -161,18 +202,63 @@ class App:
             self.space.remove(target_shape)
             self.space.remove(target_body)
 
-    def handle_key_input(self):
+    def post_solve_player_hit(self, arbiter, space, data):
+        """
+        Handles a collision between the player and a target.
+        :param arbiter: Pymunk Arbiter containing the colliding shapes
+        :param space: Pymunk Space in which the collision occurs
+        :param data: Additional data for the callback
+        :return: None
+        """
+        player, target = arbiter.shapes
+        player_body = player.body
+        target_body = target.body
+
+        self.space.add_post_step_callback(
+            self.hit_player,
+            target_body,
+            player_body
+        )
+
+    def hit_player(self, space, target, player):
+        """
+        Called when a target hits the player. Removes the target and reduces
+        the player's hit points by the target's damage points. The game ends if
+        the player's HP reaches zero.
+        :param space: Pymunk Space in which the collision occurs
+        :param target: Target that hits the player
+        :param player: Player hit by the target
+        :return: None
+        """
+        if target in space.bodies and target.shape in space.shapes:
+            self.space.remove(target, target.shape)
+
+        if target in self.targets:
+            self.targets.remove(target)
+
+        player.hit_points -= target.damage_points
+
+        if player.hit_points <= 0:
+            self.game_over()
+
+    def game_over(self):
+        """
+        Stop the game and display a game over screen.
+        :return: None
+        """
+        self.playing = False
+        self.space.remove(*self.space.bodies, *self.space.shapes)
+        self.gui.show_game_over_screen()
+        pygame.display.flip()
+
+    def handle_key_input(self, keys):
         """
         Handle events triggered by keypress inputs. Move the player with arrow
         keys and WASD, and save a screenshot with P.
         :return: None
         """
-        keys = pygame.key.get_pressed()
         max_x = self.gui.screen_width
         max_y = self.gui.screen_height
-
-        if keys[pygame.K_ESCAPE] or keys[pygame.K_q]:
-            self.running = False
 
         if keys[pygame.K_UP] or keys[pygame.K_w]:
             self.player.move(0, -1, max_x, max_y)

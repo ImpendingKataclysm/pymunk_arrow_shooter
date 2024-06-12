@@ -18,6 +18,7 @@ class Player(pymunk.Body):
         self.elasticity = 0.9
         self.shape = pymunk.Circle(self, self.radius)
         self.shape.collision_type = 2
+        self.hit_points = 5
 
     def place(self):
         """

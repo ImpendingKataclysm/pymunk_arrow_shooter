@@ -38,7 +38,8 @@ class App:
         self.targets: List[Target] = []
 
         self.ticks_to_next_target = 5
-        # self.player_score: int = 0
+
+        self.line_start_point: Optional[Vec2d] = None
 
     def setup(self):
         """
@@ -99,11 +100,51 @@ class App:
 
             self.gui.show_gui_data(self.player.score, self.player.hit_points)
 
+            if self.line_start_point is not None:
+                self.start_drawing_wall()
+
             pygame.display.flip()
 
             self.fps = 60
             self.space.step(1.0 / self.fps)
             self.gui.clock.tick(self.fps)
+
+    def start_drawing_wall(self):
+        """
+        Start drawing a line segment between the current line start point and
+        the current mouse position.
+        :return: None
+        """
+        point_a = (int(self.line_start_point.x), int(self.line_start_point.y))
+        point_b = pymunk.pygame_util.from_pygame(
+            Vec2d(*pygame.mouse.get_pos()),
+            self.gui.screen
+        )
+
+        pygame.draw.lines(
+            self.gui.screen,
+            pygame.Color('black'),
+            False,
+            [point_a, point_b]
+        )
+
+    def finish_drawing_wall(self, end_point):
+        """
+        Draw a line segment between the current line start point and the given
+        end point
+        :param end_point: The point at which to end the line segment
+        :return: None
+        """
+        wall = pymunk.Segment(
+            self.space.static_body,
+            self.line_start_point,
+            end_point,
+            radius=0.0
+        )
+
+        wall.friction = 0.99
+
+        self.space.add(wall)
 
     def add_collision_handlers(self):
         """
@@ -153,15 +194,28 @@ class App:
         :return: None
         """
         left_click_event = 1
+        right_click_event = 3
+
         for e in events:
             if e.type == pygame.MOUSEBUTTONDOWN:
                 if e.button == left_click_event:
                     self.start_time = pygame.time.get_ticks()
+                elif (
+                    e.button == right_click_event
+                    and self.line_start_point is None
+                ):
+                    self.line_start_point = Vec2d(*e.pos)
             elif e.type == pygame.MOUSEBUTTONUP:
                 if e.button == left_click_event:
                     self.fire()
                     self.missile = Missile(self.player.position)
                     self.space.add(self.missile, self.missile.shape)
+                elif (
+                    e.button == right_click_event
+                    and self.line_start_point is not None
+                ):
+                    self.finish_drawing_wall(e.pos)
+                    self.line_start_point = None
 
     def post_solve_missile_hit(self, arbiter, space, data):
         """

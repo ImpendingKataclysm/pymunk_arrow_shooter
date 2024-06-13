@@ -64,18 +64,25 @@ class Interface:
         Display the instructions at the bottom of the screen.
         :return: None
         """
-        text_start_x = 5
-        text_start_y = self.screen_height - 75
         line_height = 25
         instructions = [
             'Aim with the mouse. Hold the left mouse button to charge the shot,'
             ' then release it to fire',
+            'Right-click and drag to draw a wall and stop the balls from falling.',
             'Use the arrow keys or WASD keys to move.',
             'Press Esc or \'Q\' to quit.'
         ]
 
+        text_start_x = 5
+        text_start_y = self.screen_height - line_height * len(instructions)
+
         for line in instructions:
-            self.render_text(line, (text_start_x, text_start_y), self.font_size_p)
+            self.render_text(
+                line,
+                (text_start_x, text_start_y),
+                self.font_size_p
+            )
+
             text_start_y += line_height
 
     def show_hit_points(self, hp: int):

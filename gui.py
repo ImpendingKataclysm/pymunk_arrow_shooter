@@ -27,6 +27,18 @@ class Interface:
         """
         self.screen.fill(pygame.Color('darkslategray'))
 
+    def show_gui_data(self, score, hp):
+        """
+        Display game instructions and data in the GUI.
+        :param score: The player's current score
+        :param hp: The player's current hit points
+        :return: None
+        """
+        self.show_score(score)
+        self.show_hit_points(hp)
+        self.show_instructions()
+        self.show_frame_rate()
+
     def show_score(self, points: int):
         """
         Display the player's score in the GUI.

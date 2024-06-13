@@ -97,10 +97,7 @@ class App:
             if pygame.mouse.get_pressed()[left_mouse_press]:
                 self.show_power_meter()
 
-            self.gui.show_score(self.player.score)
-            self.gui.show_frame_rate()
-            self.gui.show_instructions()
-            self.gui.show_hit_points(self.player.hit_points)
+            self.gui.show_gui_data(self.player.score, self.player.hit_points)
 
             pygame.display.flip()
 
@@ -367,12 +364,15 @@ class App:
             self.ticks_to_next_target = 100
             self.spawn_target()
 
-        targets_to_remove = [
-            target for target in self.targets if (
-                target.position.y >= self.gui.screen_height
-                or target not in self.space.bodies
-            )
-        ]
+        targets_to_remove = []
+
+        for target in self.targets:
+            if target.position.y >= self.gui.screen_height:
+                targets_to_remove.append(target)
+                self.player.score -= target.damage_points
+
+                if self.player.score < 0:
+                    self.player.score = 0
 
         for target in targets_to_remove:
             if target in self.space.bodies:

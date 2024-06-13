@@ -20,8 +20,6 @@ class Interface:
         self.font_size_p = 18
         self.font_size_h1 = 36
 
-        # self.main_font = pygame.font.SysFont('Calibri', 18)
-
     def clear(self):
         """
         Clear the screen and display a solid background.
@@ -67,6 +65,21 @@ class Interface:
         for line in instructions:
             self.render_text(line, (text_start_x, text_start_y), self.font_size_p)
             text_start_y += line_height
+
+    def show_hit_points(self, hp: int):
+        """
+        Display a green circle for each of the player's current hit points.
+        :param hp: The player's current hit point total
+        :return: None
+        """
+        radius = 10
+        start_x = self.screen_width // 2 - hp * radius
+        start_y = 25
+        color = (0, 255, 0)
+
+        for p in range(hp):
+            pygame.draw.circle(self.screen, color, (start_x, start_y), radius)
+            start_x += radius * 3
 
     def show_game_over_screen(self):
         """

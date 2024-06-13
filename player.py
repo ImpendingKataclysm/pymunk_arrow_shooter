@@ -19,6 +19,7 @@ class Player(pymunk.Body):
         self.shape = pymunk.Circle(self, self.radius)
         self.shape.collision_type = 2
         self.hit_points = 5
+        self.score = 0
 
     def place(self):
         """

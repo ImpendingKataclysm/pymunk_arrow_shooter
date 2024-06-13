@@ -38,7 +38,7 @@ class App:
         self.targets: List[Target] = []
 
         self.ticks_to_next_target = 5
-        self.player_score: int = 0
+        # self.player_score: int = 0
 
     def setup(self):
         """
@@ -50,7 +50,6 @@ class App:
 
         self.fps = 0
         self.start_time = 0
-        self.player_score = 0
 
         self.space.gravity = (0, 100)
 
@@ -69,23 +68,8 @@ class App:
         :return: None
         """
         left_mouse_press = 0
-        collision_type_target = 0
-        collision_type_missile = 1
-        collision_type_player = 2
 
-        missile_hit_handler = self.space.add_collision_handler(
-            collision_type_target,
-            collision_type_missile
-        )
-
-        missile_hit_handler.post_solve = self.post_solve_missile_hit
-
-        player_hit_handler = self.space.add_collision_handler(
-            collision_type_player,
-            collision_type_target
-        )
-
-        player_hit_handler.post_solve = self.post_solve_player_hit
+        self.add_collision_handlers()
 
         while self.running:
             events = pygame.event.get()
@@ -113,15 +97,41 @@ class App:
             if pygame.mouse.get_pressed()[left_mouse_press]:
                 self.show_power_meter()
 
-            self.gui.show_score(self.player_score)
+            self.gui.show_score(self.player.score)
             self.gui.show_frame_rate()
             self.gui.show_instructions()
+            self.gui.show_hit_points(self.player.hit_points)
 
             pygame.display.flip()
 
             self.fps = 60
             self.space.step(1.0 / self.fps)
             self.gui.clock.tick(self.fps)
+
+    def add_collision_handlers(self):
+        """
+        Define handlers for collisions between different shapes:
+        - Missile colliding with a Target
+        - Target colliding with the Player
+        :return: None
+        """
+        collision_type_target = 0
+        collision_type_missile = 1
+        collision_type_player = 2
+
+        missile_hit_handler = self.space.add_collision_handler(
+            collision_type_target,
+            collision_type_missile
+        )
+
+        missile_hit_handler.post_solve = self.post_solve_missile_hit
+
+        player_hit_handler = self.space.add_collision_handler(
+            collision_type_player,
+            collision_type_target
+        )
+
+        player_hit_handler.post_solve = self.post_solve_player_hit
 
     def handle_quit_event(self, events, keys):
         """
@@ -192,7 +202,7 @@ class App:
         :return: None
         """
         if target_body in self.targets:
-            self.player_score += target_body.score_points
+            self.player.score += target_body.score_points
 
         if missile_body in self.flying_missiles:
             self.flying_missiles.remove(missile_body)
@@ -374,7 +384,7 @@ class App:
     def spawn_target(self):
         """
         Create a target at a random position at the top of the screen.
-        :return:
+        :return: None
         """
         target = Target()
         target_x = random.randint(100, self.gui.screen_width - 100)
